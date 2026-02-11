@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosque Donation Tracker - Google Sheets</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e5128 0%, #2d6a4f 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e5128 0%, #2d6a4f 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .setup-banner {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #ffeaa7;
+        }
+
+        .setup-banner.connected {
+            background: #d4edda;
+            color: #155724;
+            border-bottom: 2px solid #c3e6cb;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #1e5128;
+            border-bottom: 3px solid #1e5128;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1e5128;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e5128 0%, #2d6a4f 100%);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+
+        .btn-export {
+            background: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .donor-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #1e5128;
+        }
+
+        .donor-card h3 {
+            color: #1e5128;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .donor-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .info-item strong {
+            color: #333;
+        }
+
+        .donation-entry {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .total-badge {
+            display: inline-block;
+            background: #1e5128;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e5128 0%, #2d6a4f 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .month-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .month-selector select {
+            flex: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .payment-method-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .cash { background: #d4edda; color: #155724; }
+        .card { background: #cce5ff; color: #004085; }
+        .bank { background: #fff3cd; color: #856404; }
+        .other { background: #e2e3e5; color: #383d41; }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1e5128;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .setup-instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .setup-instructions h3 {
+            color: #1e5128;
+            margin-bottom: 15px;
+        }
+
+        .setup-instructions ol {
+            margin-left: 20px;
+        }
+
+        .setup-instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .setup-instructions code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: #d63384;
+        }
+
+        @media (max-width: 600px) {
+            .donor-info {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>🕌</span>
+                Mosque Donation Tracker
+            </h1>
+            <p>Barakallahu Feekum - Synced with Google Sheets</p>
+        </div>
+
+        <div id="setup-status" class="setup-banner">
+            ⚠️ Google Sheets not configured - Click Settings tab to setup
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab" onclick="switchTab('register')">➕ Register</button>
+            <button class="nav-tab" onclick="switchTab('add')">💰 Donate</button>
+            <button class="nav-tab" onclick="switchTab('donors')">👥 Donors</button>
+            <button class="nav-tab" onclick="switchTab('reports')">📊 Reports</button>
+            <button class="nav-tab active" onclick="switchTab('settings')">⚙️ Settings</button>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content active">
+            <div class="setup-instructions">
+                <h3>🔧 Google Sheets Setup Instructions</h3>
+                <ol>
+                    <li>Go to <a href="https://script.google.com/home/start" target="_blank"><strong>script.google.com</strong></a></li>
+                    <li>Click <strong>"New Project"</strong></li>
+                    <li>Delete any code and paste the code I'll give you</li>
+                    <li>Click <strong>"Deploy"</strong> → <strong>"New Deployment"</strong></li>
+                    <li>Select type: <strong>"Web app"</strong></li>
+                    <li>Execute as: <strong>"Me"</strong></li>
+                    <li>Who has access: <strong>"Anyone"</strong></li>
+                    <li>Click <strong>"Deploy"</strong></li>
+                    <li>Copy the <strong>Web App URL</strong> and paste it below</li>
+                </ol>
+                <p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                    <strong>Note:</strong> I'll provide the Google Apps Script code after you click "Get Script Code" below.
+                </p>
+            </div>
+
+            <button class="btn" onclick="showScriptCode()">📋 Get Script Code</button>
+
+            <div id="script-code-section" style="display: none; margin-top: 20px;">
+                <h3 style="color: #1e5128; margin-bottom: 10px;">Copy this code to Google Apps Script:</h3>
+                <textarea id="script-code" readonly style="font-family: monospace; height: 300px; font-size: 12px;"></textarea>
+                <button class="btn btn-secondary" onclick="copyScriptCode()">📋 Copy Code</button>
+            </div>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <div class="form-group">
+                    <label>Google Apps Script Web App URL</label>
+                    <input type="url" id="sheets-url" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
+                </div>
+                <button class="btn" onclick="saveSheetConfig()">💾 Save & Connect</button>
+                <button class="btn btn-secondary" onclick="testConnection()">🔌 Test Connection</button>
+            </div>
+        </div>
+
+        <!-- Register Donor Tab -->
+        <div id="register-tab" class="tab-content">
+            <div id="register-success" class="success-message" style="display: none;"></div>
+            <div id="register-error" class="error-message" style="display: none;"></div>
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Donor Code * (e.g., DA, DB, DC)</label>
+                    <input type="text" id="donor-code" required placeholder="Enter unique code" style="text-transform: uppercase;">
+                    <small style="color: #666; font-size: 12px;">This code will be used for quick donation entry</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Donor Name *</label>
+                    <input type="text" id="reg-donor-name" required placeholder="Enter donor's full name">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number (Optional)</label>
+                    <input type="tel" id="phone" placeholder="Enter phone number">
+                </div>
+
+                <div class="form-group">
+                    <label>Address (Optional)</label>
+                    <textarea id="address" rows="2" placeholder="Enter address"></textarea>
+                </div>
+
+                <button type="submit" class="btn">Register Donor</button>
+            </form>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <h3 style="color: #1e5128; margin-bottom: 15px;">Registered Donors</h3>
+                <div id="registered-donors-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading donors...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Donation Tab -->
+        <div id="add-tab" class="tab-content">
+            <div id="success-message" class="success-message" style="display: none;"></div>
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <form id="donation-form">
+                <div class="form-group">
+                    <label>Receipt Code *</label>
+                    <input type="text" id="receipt-code" required placeholder="Enter receipt code (e.g., RCP001)" style="text-transform: uppercase;">
+                    <small style="color: #666; font-size: 12px;">Enter unique receipt code from physical receipt</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Donor Code *</label>
+                    <input type="text" id="quick-donor-code" required placeholder="Enter donor code (e.g., DA)" style="text-transform: uppercase;" list="donor-codes">
+                    <datalist id="donor-codes"></datalist>
+                    <div id="donor-name-display" style="margin-top: 8px; padding: 10px; background: #e8f5e9; border-radius: 6px; display: none;">
+                        <strong style="color: #1e5128;">Donor:</strong> <span id="selected-donor-name"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Amount ($) *</label>
+                    <input type="number" id="amount" required placeholder="0.00" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Month *</label>
+                    <select id="donation-month" required>
+                        <option value="">Select month</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Year *</label>
+                    <select id="donation-year" required>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Method *</label>
+                    <select id="payment-method" required>
+                        <option value="">Select payment method</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Check">Check</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes (Optional)</label>
+                    <textarea id="notes" rows="3" placeholder="Add any additional notes..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">Add Donation</button>
+            </form>
+        </div>
+
+        <!-- Donors Tab -->
+        <div id="donors-tab" class="tab-content">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="🔍 Search donors by name..." onkeyup="filterDonors()">
+            </div>
+            <div id="donors-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading donations...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="tab-content">
+            <button class="btn btn-export" onclick="exportToExcel()">📥 Export to Excel</button>
+            
+            <div class="month-selector">
+                <select id="report-month" onchange="updateReports()">
+                    <option value="">All Time</option>
+                </select>
+                <select id="report-year" onchange="updateReports()">
+                    <option value="">All Years</option>
+                </select>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="total-amount">$0</h3>
+                    <p>Total Donations</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-donors">0</h3>
+                    <p>Total Donors</p>
+                </div>
+            </div>
+
+            <div id="monthly-breakdown"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let sheetsUrl = localStorage.getItem('sheetsUrl') || '';
+        let registeredDonors = [];
+        let donations = [];
+
+        // Initialize
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+
+        // Setup year dropdown
+        const yearSelect = document.getElementById('donation-year');
+        for (let year = currentYear - 2; year <= currentYear + 5; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            if (year === currentYear) option.selected = true;
+            yearSelect.appendChild(option);
+        }
+
+        // Set current month
+        document.getElementById('donation-month').value = currentMonth;
+
+        // Check if configured
+        if (sheetsUrl) {
+            document.getElementById('sheets-url').value = sheetsUrl;
+            updateSetupStatus(true);
+            loadAllData();
+        } else {
+            updateSetupStatus(false);
+        }
+
+        initializeReportFilters();
+
+        // Google Sheets Script Code
+        function showScriptCode() {
+            const code = `function doGet(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet();
+  
+  if (e.parameter.action === 'getDonors') {
+    return getDonors(sheet);
+  } else if (e.parameter.action === 'getDonations') {
+    return getDonations(sheet);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({success: false, error: 'Invalid action'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet();
+  const data = JSON.parse(e.postData.contents);
+  
+  if (data.action === 'addDonor') {
+    return addDonor(sheet, data);
+  } else if (data.action === 'updateDonor') {
+    return updateDonor(sheet, data);
+  } else if (data.action === 'deleteDonor') {
+    return deleteDonor(sheet, data);
+  } else if (data.action === 'addDonation') {
+    return addDonation(sheet, data);
+  } else if (data.action === 'updateDonation') {
+    return updateDonation(sheet, data);
+  } else if (data.action === 'deleteDonation') {
+    return deleteDonation(sheet, data);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({success: false, error: 'Invalid action'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getDonors(sheet) {
+  let donorSheet = sheet.getSheetByName('Donors');
+  if (!donorSheet) {
+    donorSheet = sheet.insertSheet('Donors');
+    donorSheet.appendRow(['Code', 'Name', 'Phone', 'Address', 'RegisteredDate']);
+  }
+  
+  const data = donorSheet.getDataRange().getValues();
+  const donors = data.slice(1).map(row => ({
+    code: row[0],
+    name: row[1],
+    phone: row[2],
+    address: row[3],
+    registeredDate: row[4]
+  }));
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true, donors: donors}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getDonations(sheet) {
+  let donationSheet = sheet.getSheetByName('Donations');
+  if (!donationSheet) {
+    donationSheet = sheet.insertSheet('Donations');
+    donationSheet.appendRow(['ID', 'ReceiptCode', 'DonorCode', 'DonorName', 'Amount', 'Month', 'Year', 'Date', 'PaymentMethod', 'Notes', 'CreatedAt']);
+  }
+  
+  const data = donationSheet.getDataRange().getValues();
+  const donations = data.slice(1).map(row => ({
+    id: row[0],
+    receiptCode: row[1],
+    donorCode: row[2],
+    donorName: row[3],
+    amount: row[4],
+    month: row[5],
+    year: row[6],
+    date: row[7],
+    paymentMethod: row[8],
+    notes: row[9],
+    createdAt: row[10]
+  }));
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true, donations: donations}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function addDonor(sheet, data) {
+  let donorSheet = sheet.getSheetByName('Donors');
+  if (!donorSheet) {
+    donorSheet = sheet.insertSheet('Donors');
+    donorSheet.appendRow(['Code', 'Name', 'Phone', 'Address', 'RegisteredDate']);
+  }
+  
+  donorSheet.appendRow([
+    data.donor.code,
+    data.donor.name,
+    data.donor.phone || '',
+    data.donor.address || '',
+    data.donor.registeredDate
+  ]);
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function updateDonor(sheet, data) {
+  const donorSheet = sheet.getSheetByName('Donors');
+  const dataRange = donorSheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === data.donor.code) {
+      donorSheet.getRange(i + 1, 2).setValue(data.donor.name);
+      donorSheet.getRange(i + 1, 3).setValue(data.donor.phone || '');
+      donorSheet.getRange(i + 1, 4).setValue(data.donor.address || '');
+      break;
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function deleteDonor(sheet, data) {
+  const donorSheet = sheet.getSheetByName('Donors');
+  const dataRange = donorSheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === data.code) {
+      donorSheet.deleteRow(i + 1);
+      break;
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function addDonation(sheet, data) {
+  let donationSheet = sheet.getSheetByName('Donations');
+  if (!donationSheet) {
+    donationSheet = sheet.insertSheet('Donations');
+    donationSheet.appendRow(['ID', 'ReceiptCode', 'DonorCode', 'DonorName', 'Amount', 'Month', 'Year', 'Date', 'PaymentMethod', 'Notes', 'CreatedAt']);
+  }
+  
+  donationSheet.appendRow([
+    data.donation.id,
+    data.donation.receiptCode,
+    data.donation.donorCode,
+    data.donation.donorName,
+    data.donation.amount,
+    data.donation.month,
+    data.donation.year,
+    data.donation.date,
+    data.donation.paymentMethod,
+    data.donation.notes || '',
+    data.donation.createdAt
+  ]);
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function updateDonation(sheet, data) {
+  const donationSheet = sheet.getSheetByName('Donations');
+  const dataRange = donationSheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] == data.donation.id) {
+      donationSheet.getRange(i + 1, 2).setValue(data.donation.receiptCode);
+      donationSheet.getRange(i + 1, 3).setValue(data.donation.donorCode);
+      donationSheet.getRange(i + 1, 4).setValue(data.donation.donorName);
+      donationSheet.getRange(i + 1, 5).setValue(data.donation.amount);
+      donationSheet.getRange(i + 1, 6).setValue(data.donation.month);
+      donationSheet.getRange(i + 1, 7).setValue(data.donation.year);
+      donationSheet.getRange(i + 1, 8).setValue(data.donation.date);
+      donationSheet.getRange(i + 1, 9).setValue(data.donation.paymentMethod);
+      donationSheet.getRange(i + 1, 10).setValue(data.donation.notes || '');
+      break;
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function deleteDonation(sheet, data) {
+  const donationSheet = sheet.getSheetByName('Donations');
+  const dataRange = donationSheet.getDataRange();
+  const values = dataRange.getValues();
+  
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] == data.id) {
+      donationSheet.deleteRow(i + 1);
+      break;
+    }
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+            document.getElementById('script-code').value = code;
+            document.getElementById('script-code-section').style.display = 'block';
+        }
+
+        function copyScriptCode() {
+            const code = document.getElementById('script-code');
+            code.select();
+            document.execCommand('copy');
+            alert('Script code copied! Now paste it in Google Apps Script.');
+        }
+
+        function saveSheetConfig() {
+            const url = document.getElementById('sheets-url').value.trim();
+            if (!url) {
+                alert('Please enter the Google Apps Script URL');
+                return;
+            }
+            
+            sheetsUrl = url;
+            localStorage.setItem('sheetsUrl', url);
+            updateSetupStatus(true);
+            alert('Configuration saved! Now test the connection.');
+            loadAllData();
+        }
+
+        async function testConnection() {
+            if (!sheetsUrl) {
+                alert('Please save the configuration first');
+                return;
+            }
+
+            try {
+                const response = await fetch(sheetsUrl + '?action=getDonors');
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Connection successful! You can now use the app.');
+                    updateSetupStatus(true);
+                    loadAllData();
+                } else {
+                    alert('❌ Connection failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Connection failed: ' + error.message);
+            }
+        }
+
+        function updateSetupStatus(connected) {
+            const banner = document.getElementById('setup-status');
+            if (connected) {
+                banner.className = 'setup-banner connected';
+                banner.innerHTML = '✅ Connected to Google Sheets - All data syncing automatically';
+            } else {
+                banner.className = 'setup-banner';
+                banner.innerHTML = '⚠️ Google Sheets not configured - Click Settings tab to setup';
+            }
+        }
+
+        async function loadAllData() {
+            if (!sheetsUrl) return;
+
+            try {
+                // Load donors
+                const donorsResponse = await fetch(sheetsUrl + '?action=getDonors');
+                const donorsData = await donorsResponse.json();
+                if (donorsData.success) {
+                    registeredDonors = donorsData.donors;
+                    displayRegisteredDonors();
+                    updateDonorCodesList();
+                }
+
+                // Load donations
+                const donationsResponse = await fetch(sheetsUrl + '?action=getDonations');
+                const donationsData = await donationsResponse.json();
+                if (donationsData.success) {
+                    donations = donationsData.donations;
+                    displayDonors();
+                    updateReports();
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        // Donor Code lookup
+        document.getElementById('quick-donor-code').addEventListener('input', function(e) {
+            const code = e.target.value.trim().toUpperCase();
+            const donor = registeredDonors.find(d => d.code === code);
+            
+            const nameDisplay = document.getElementById('donor-name-display');
+            const nameSpan = document.getElementById('selected-donor-name');
+            
+            if (donor) {
+                nameSpan.textContent = donor.name;
+                nameDisplay.style.display = 'block';
+            } else {
+                nameDisplay.style.display = 'none';
+            }
+        });
+
+        // Register Donor Form
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!sheetsUrl) {
+                showMessage('register-error', 'Please configure Google Sheets first in Settings tab');
+                return;
+            }
+
+            const donorCode = document.getElementById('donor-code').value.trim().toUpperCase();
+            const donorName = document.getElementById('reg-donor-name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+
+            const existingDonor = registeredDonors.find(d => d.code === donorCode);
+
+            try {
+                if (existingDonor && !document.getElementById('donor-code').readOnly) {
+                    showMessage('register-error', 'This donor code already exists!');
+                    return;
+                }
+
+                const donor = {
+                    code: donorCode,
+                    name: donorName,
+                    phone: phone,
+                    address: address,
+                    registeredDate: new Date().toISOString().split('T')[0]
+                };
+
+                const action = existingDonor ? 'updateDonor' : 'addDonor';
+                
+                const response = await fetch(sheetsUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: action, donor: donor })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('register-success', existingDonor ? 'Donor updated successfully!' : `Donor registered! Code: ${donorCode}`);
+                    this.reset();
+                    document.getElementById('donor-code').readOnly = false;
+                    const btn = this.querySelector('button[type="submit"]');
+                    btn.textContent = 'Register Donor';
+                    btn.style.background = '';
+                    
+                    await loadAllData();
+                } else {
+                    showMessage('register-error', 'Failed to save donor');
+                }
+            } catch (error) {
+                showMessage('register-error', 'Error: ' + error.message);
+            }
+        });
+
+        // Donation Form
+        document.getElementById('donation-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!sheetsUrl) {
+                showMessage('error-message', 'Please configure Google Sheets first in Settings tab');
+                return;
+            }
+
+            const receiptCode = document.getElementById('receipt-code').value.trim().toUpperCase();
+            const donorCode = document.getElementById('quick-donor-code').value.trim().toUpperCase();
+            const donor = registeredDonors.find(d => d.code === donorCode);
+            
+            if (!donor) {
+                showMessage('error-message', 'Invalid donor code!');
+                return;
+            }
+
+            const form = e.target;
+            const editingId = form.dataset.editingId;
+
+            if (!editingId && donations.find(d => d.receiptCode === receiptCode)) {
+                showMessage('error-message', 'Receipt code already exists!');
+                return;
+            }
+
+            const month = parseInt(document.getElementById('donation-month').value);
+            const year = parseInt(document.getElementById('donation-year').value);
+            const dateObj = new Date(year, month - 1, 1);
+            const dateString = dateObj.toISOString().split('T')[0];
+
+            try {
+                const donation = {
+                    id: editingId || Date.now(),
+                    receiptCode: receiptCode,
+                    donorCode: donorCode,
+                    donorName: donor.name,
+                    amount: parseFloat(document.getElementById('amount').value),
+                    month: month,
+                    year: year,
+                    date: dateString,
+                    paymentMethod: document.getElementById('payment-method').value,
+                    notes: document.getElementById('notes').value.trim(),
+                    createdAt: new Date().toISOString()
+                };
+
+                const action = editingId ? 'updateDonation' : 'addDonation';
+                
+                const response = await fetch(sheetsUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: action, donation: donation })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('success-message', editingId ? 'Donation updated!' : `Donation added! Receipt: ${receiptCode}`);
+                    
+                    this.reset();
+                    document.getElementById('donation-month').value = currentMonth;
+                    document.getElementById('donation-year').value = currentYear;
+                    document.getElementById('donor-name-display').style.display = 'none';
+                    
+                    if (editingId) {
+                        delete form.dataset.editingId;
+                        const btn = form.querySelector('button[type="submit"]');
+                        btn.textContent = 'Add Donation';
+                        btn.style.background = '';
+                    }
+                    
+                    await loadAllData();
+                } else {
+                    showMessage('error-message', 'Failed to save donation');
+                }
+            } catch (error) {
+                showMessage('error-message', 'Error: ' + error.message);
+            }
+        });
+
+        function showMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => element.style.display = 'none', 5000);
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+
+            if (tab === 'donors') displayDonors();
+            if (tab === 'reports') updateReports();
+            if (tab === 'register') displayRegisteredDonors();
+        }
+
+        function updateDonorCodesList() {
+            const datalist = document.getElementById('donor-codes');
+            datalist.innerHTML = '';
+            
+            registeredDonors.forEach(donor => {
+                const option = document.createElement('option');
+                option.value = donor.code;
+                option.textContent = `${donor.code} - ${donor.name}`;
+                datalist.appendChild(option);
+            });
+        }
+
+        function displayRegisteredDonors() {
+            const list = document.getElementById('registered-donors-list');
+            
+            if (registeredDonors.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>No donors registered yet</p></div>';
+                return;
+            }
+
+            let html = '';
+            registeredDonors.sort((a, b) => a.code.localeCompare(b.code)).forEach(donor => {
+                const donorDonations = donations.filter(d => d.donorCode === donor.code);
+                const totalAmount = donorDonations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+                
+                html += `
+                    <div class="donor-card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3>${donor.name}</h3>
+                                <div style="color: #1e5128; font-weight: 600; font-size: 18px; margin-top: 5px;">
+                                    Code: ${donor.code}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span class="total-badge">$${totalAmount.toFixed(2)}</span>
+                                <button onclick="editDonor('${donor.code}')" style="background: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">✏️ Edit</button>
+                                <button onclick="deleteDonor('${donor.code}')" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🗑️ Delete</button>
+                            </div>
+                        </div>
+                        <div class="donor-info">
+                            ${donor.phone ? `<div class="info-item"><strong>Phone:</strong> ${donor.phone}</div>` : ''}
+                            ${donor.address ? `<div class="info-item"><strong>Address:</strong> ${donor.address}</div>` : ''}
+                            <div class="info-item"><strong>Total Donations:</strong> ${donorDonations.length}</div>
+                            <div class="info-item"><strong>Registered:</strong> ${formatDate(donor.registeredDate)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html;
+        }
+
+        function editDonor(code) {
+            const donor = registeredDonors.find(d => d.code === code);
+            if (!donor) return;
+
+            document.getElementById('donor-code').value = donor.code;
+            document.getElementById('donor-code').readOnly = true;
+            document.getElementById('reg-donor-name').value = donor.name;
+            document.getElementById('phone').value = donor.phone || '';
+            document.getElementById('address').value = donor.address || '';
+
+            const registerBtn = document.querySelector('#register-form button[type="submit"]');
+            registerBtn.textContent = 'Update Donor';
+            registerBtn.style.background = '#007bff';
+
+            switchTab('register');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteDonor(code) {
+            const donor = registeredDonors.find(d => d.code === code);
+            if (!donor) return;
+
+            const donorDonations = donations.filter(d => d.donorCode === code);
+            
+            let message = `Delete donor "${donor.name}" (${code})?`;
+            if (donorDonations.length > 0) {
+                message += `\n\nThis donor has ${donorDonations.length} donation(s). All will be deleted!`;
+            }
+
+            if (!confirm(message)) return;
+
+            try {
+                // Delete donor
+                await fetch(sheetsUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'deleteDonor', code: code })
+                });
+
+                // Delete all donations
+                for (const donation of donorDonations) {
+                    await fetch(sheetsUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'deleteDonation', id: donation.id })
+                    });
+                }
+
+                alert('Donor deleted successfully!');
+                await loadAllData();
+            } catch (error) {
+                alert('Error deleting donor: ' + error.message);
+            }
+        }
+
+        function displayDonors() {
+            const donorsList = document.getElementById('donors-list');
+            
+            if (donations.length === 0) {
+                donorsList.innerHTML = '<div class="empty-state"><p>No donations recorded yet</p></div>';
+                return;
+            }
+
+            const donorMap = {};
+            donations.forEach(d => {
+                const key = d.donorCode;
+                if (!donorMap[key]) {
+                    donorMap[key] = [];
+                }
+                donorMap[key].push(d);
+            });
+
+            const sortedDonors = Object.keys(donorMap).sort();
+
+            let html = '';
+            sortedDonors.forEach(donorKey => {
+                const donorDonations = donorMap[donorKey];
+                const firstDonation = donorDonations[0];
+                const donorName = firstDonation.donorName;
+                const donorCode = firstDonation.donorCode;
+                const totalAmount = donorDonations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+                
+                donorDonations.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                html += `
+                    <div class="donor-card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3>${donorName}</h3>
+                                <div style="color: #1e5128; font-weight: 600; margin-top: 3px;">Code: ${donorCode}</div>
+                            </div>
+                            <span class="total-badge">$${totalAmount.toFixed(2)}</span>
+                        </div>
+                        <div class="donor-info">
+                            <div class="info-item"><strong>Donations:</strong> ${donorDonations.length}</div>
+                            <div class="info-item"><strong>Last:</strong> ${formatMonthYear(donorDonations[0])}</div>
+                        </div>
+                `;
+
+                donorDonations.forEach(d => {
+                    html += `
+                        <div class="donation-entry">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                <div>
+                                    <strong style="font-size: 16px;">$${parseFloat(d.amount).toFixed(2)}</strong>
+                                    <span class="payment-method-badge ${d.paymentMethod.toLowerCase().replace(' ', '-')}">${d.paymentMethod}</span>
+                                    <div style="font-size: 11px; color: #1e5128; font-weight: 600; margin-top: 3px;">Receipt: ${d.receiptCode}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 12px; color: #666; margin-bottom: 5px;">${formatMonthYear(d)}</div>
+                                    <div style="display: flex; gap: 5px;">
+                                        <button onclick="editDonation(${d.id})" style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">✏️</button>
+                                        <button onclick="deleteDonation(${d.id})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                            ${d.notes ? `<div style="font-size: 12px; color: #666;">${d.notes}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            });
+
+            donorsList.innerHTML = html;
+        }
+
+        function editDonation(donationId) {
+            const donation = donations.find(d => d.id == donationId);
+            if (!donation) return;
+
+            switchTab('add');
+
+            document.getElementById('receipt-code').value = donation.receiptCode;
+            document.getElementById('quick-donor-code').value = donation.donorCode;
+            document.getElementById('donor-name-display').style.display = 'block';
+            document.getElementById('selected-donor-name').textContent = donation.donorName;
+            document.getElementById('amount').value = donation.amount;
+            document.getElementById('donation-month').value = donation.month;
+            document.getElementById('donation-year').value = donation.year;
+            document.getElementById('payment-method').value = donation.paymentMethod;
+            document.getElementById('notes').value = donation.notes || '';
+
+            const form = document.getElementById('donation-form');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Update Donation';
+            submitBtn.style.background = '#007bff';
+            
+            form.dataset.editingId = donationId;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteDonation(donationId) {
+            const donation = donations.find(d => d.id == donationId);
+            if (!donation) return;
+
+            if (!confirm(`Delete donation?\n\nAmount: $${donation.amount}\nMonth: ${formatMonthYear(donation)}\nReceipt: ${donation.receiptCode}`)) {
+                return;
+            }
+
+            try {
+                await fetch(sheetsUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'deleteDonation', id: donationId })
+                });
+
+                alert('Donation deleted!');
+                await loadAllData();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function filterDonors() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const donorCards = document.querySelectorAll('.donor-card');
+            
+            donorCards.forEach(card => {
+                const donorName = card.querySelector('h3').textContent.toLowerCase();
+                card.style.display = donorName.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+
+        function initializeReportFilters() {
+            const monthSelect = document.getElementById('report-month');
+            const yearSelect = document.getElementById('report-year');
+
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            months.forEach((month, index) => {
+                monthSelect.innerHTML += `<option value="${index + 1}">${month}</option>`;
+            });
+
+            const years = [...new Set(donations.map(d => d.year || new Date(d.date).getFullYear()))].sort((a, b) => b - a);
+            years.forEach(year => {
+                yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
+            });
+        }
+
+        function updateReports() {
+            const selectedMonth = document.getElementById('report-month').value;
+            const selectedYear = document.getElementById('report-year').value;
+
+            let filteredDonations = donations;
+
+            if (selectedMonth || selectedYear) {
+                filteredDonations = donations.filter(d => {
+                    const month = d.month || new Date(d.date).getMonth() + 1;
+                    const year = d.year || new Date(d.date).getFullYear();
+                    const monthMatch = !selectedMonth || month == selectedMonth;
+                    const yearMatch = !selectedYear || year == selectedYear;
+                    return monthMatch && yearMatch;
+                });
+            }
+
+            const totalAmount = filteredDonations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+            const uniqueDonors = new Set(filteredDonations.map(d => d.donorCode)).size;
+
+            document.getElementById('total-amount').textContent = `$${totalAmount.toFixed(2)}`;
+            document.getElementById('total-donors').textContent = uniqueDonors;
+
+            displayMonthlyBreakdown(filteredDonations);
+        }
+
+        function displayMonthlyBreakdown(filteredDonations) {
+            const breakdown = document.getElementById('monthly-breakdown');
+            
+            if (filteredDonations.length === 0) {
+                breakdown.innerHTML = '<div class="empty-state"><p>No donations for selected period</p></div>';
+                return;
+            }
+
+            const monthlyData = {};
+            filteredDonations.forEach(d => {
+                const month = d.month || new Date(d.date).getMonth() + 1;
+                const year = d.year || new Date(d.date).getFullYear();
+                const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = { total: 0, count: 0 };
+                }
+                monthlyData[monthKey].total += parseFloat(d.amount);
+                monthlyData[monthKey].count += 1;
+            });
+
+            let html = '<h3 style="margin-bottom: 15px; color: #1e5128;">Monthly Breakdown</h3>';
+            
+            Object.keys(monthlyData).sort().reverse().forEach(monthKey => {
+                const data = monthlyData[monthKey];
+                const [year, month] = monthKey.split('-');
+                const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                
+                html += `
+                    <div class="donor-card">
+                        <h3>${monthName}</h3>
+                        <div class="donor-info">
+                            <div class="info-item"><strong>Total:</strong> $${data.total.toFixed(2)}</div>
+                            <div class="info-item"><strong>Donations:</strong> ${data.count}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            breakdown.innerHTML = html;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatMonthYear(donation) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = donation.month || new Date(donation.date).getMonth() + 1;
+            const year = donation.year || new Date(donation.date).getFullYear();
+            return `${months[month - 1]} ${year}`;
+        }
+
+        function exportToExcel() {
+            if (donations.length === 0) {
+                alert('No donations to export!');
+                return;
+            }
+
+            let csv = 'Receipt Code,Donor Code,Donor Name,Amount,Month,Year,Payment Method,Notes,Date\n';
+            
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            donations.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(d => {
+                const month = d.month || new Date(d.date).getMonth() + 1;
+                const year = d.year || new Date(d.date).getFullYear();
+                const monthName = months[month - 1];
+                csv += `"${d.receiptCode}","${d.donorCode}","${d.donorName}",${d.amount},"${monthName}",${year},"${d.paymentMethod}","${d.notes || ''}","${d.date}"\n`;
+            });
+
+            const totalAmount = donations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+            csv += `\nTotal:,$${totalAmount.toFixed(2)}\n`;
+            csv += `Entries:,${donations.length}\n`;
+            csv += `Donors:,${registeredDonors.length}\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mosque-donations-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
